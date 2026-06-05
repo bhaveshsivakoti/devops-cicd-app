@@ -10,10 +10,10 @@ variables:
 
 steps:
 
-# ✅ FIX: Checkout code
+# ✅ Step 0: Checkout repo (CRITICAL)
 - checkout: self
 
-# ✅ Build Docker
+# ✅ Step 1: Build Docker Image
 - task: Docker@2
   displayName: Build Image
   inputs:
@@ -23,14 +23,14 @@ steps:
     tags: |
       $(tag)
 
-# ✅ Login DockerHub
+# ✅ Step 2: Login to DockerHub
 - task: Docker@2
   displayName: Login DockerHub
   inputs:
     command: login
     containerRegistry: 'dockerhub-service-connection'
 
-# ✅ Push Image
+# ✅ Step 3: Push Image
 - task: Docker@2
   displayName: Push Image
   inputs:
@@ -39,7 +39,13 @@ steps:
     tags: |
       $(tag)
 
-# ✅ Deploy to K8s
+# ✅ Optional Debug (VERY USEFUL)
+- script: |
+    echo "Listing repo files"
+    ls -la
+  displayName: Debug Files
+
+# ✅ Step 4: Deploy to Kubernetes (FINAL FIX)
 - task: Kubernetes@1
   displayName: Deploy to K8s
   inputs:
@@ -47,7 +53,4 @@ steps:
     kubernetesServiceEndpoint: 'k8s-service-connection'
     namespace: default
     command: apply
-    useConfigurationFile: true
-    configuration: |
-      deployment.yaml
-      service.yaml
+    arguments: "-f deployment.yaml -f service.yaml"
