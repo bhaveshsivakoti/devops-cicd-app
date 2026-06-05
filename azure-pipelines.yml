@@ -1,8 +1,8 @@
 trigger:
-- main   # ✅ Pipeline runs when code pushed to main branch
+- main
 
 pool:
-  vmImage: 'ubuntu-latest'   # ✅ Microsoft hosted agent
+  vmImage: 'ubuntu-latest'
 
 variables:
   imageName: 'bhaveshsivakoti/devops-app'
@@ -10,7 +10,10 @@ variables:
 
 steps:
 
-# ✅ Step 1: Build Docker Image
+# ✅ FIX: Checkout code
+- checkout: self
+
+# ✅ Build Docker
 - task: Docker@2
   displayName: Build Image
   inputs:
@@ -20,14 +23,14 @@ steps:
     tags: |
       $(tag)
 
-# ✅ Step 2: Login to DockerHub
+# ✅ Login DockerHub
 - task: Docker@2
   displayName: Login DockerHub
   inputs:
     command: login
     containerRegistry: 'dockerhub-service-connection'
 
-# ✅ Step 3: Push Image
+# ✅ Push Image
 - task: Docker@2
   displayName: Push Image
   inputs:
@@ -36,7 +39,7 @@ steps:
     tags: |
       $(tag)
 
-# ✅ Step 4: Deploy to Kubernetes
+# ✅ Deploy to K8s
 - task: Kubernetes@1
   displayName: Deploy to K8s
   inputs:
@@ -46,5 +49,5 @@ steps:
     command: apply
     useConfigurationFile: true
     configuration: |
-      $(System.DefaultWorkingDirectory)/deployment.yaml
-      $(System.DefaultWorkingDirectory)/service.yaml
+      deployment.yaml
+      service.yaml
