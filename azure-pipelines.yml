@@ -1,0 +1,50 @@
+trigger:
+- main   # ✅ Pipeline runs when code pushed to main branch
+
+pool:
+  vmImage: 'ubuntu-latest'   # ✅ Microsoft hosted agent
+
+variables:
+  imageName: 'bhaveshsivakoti/devops-app'
+  tag: 'v1'
+
+steps:
+
+# ✅ Step 1: Build Docker Image
+- task: Docker@2
+  displayName: Build Image
+  inputs:
+    command: build
+    repository: $(imageName)
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      $(tag)
+
+# ✅ Step 2: Login to DockerHub
+- task: Docker@2
+  displayName: Login DockerHub
+  inputs:
+    command: login
+    containerRegistry: 'dockerhub-service-connection'
+
+# ✅ Step 3: Push Image
+- task: Docker@2
+  displayName: Push Image
+  inputs:
+    command: push
+    repository: $(imageName)
+    tags: |
+      $(tag)
+
+# ✅ Step 4: Deploy to Kubernetes
+- task: Kubernetes@1
+  displayName: Deploy to K8s
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceEndpoint: 'k8s-service-connection'
+    namespace: default
+    command: apply
+    useConfigurationFile: true
+    configuration: |
+      deployment.yaml
+      service.yaml
