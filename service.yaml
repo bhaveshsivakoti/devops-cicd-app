@@ -1,13 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: devops-service
+  name: devops-service1
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: devops-app
   ports:
     - protocol: TCP
       port: 80
       targetPort: 5000
-      nodePort: 30007
